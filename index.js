@@ -42,15 +42,15 @@ async function run() {
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
 
-        app.get('/plants', async (req, res) => {
-            const result = await plantsCollection.find().toArray();
-            console.log(result)
-            res.send(result);
-        })
+        // app.get('/plants', async (req, res) => {
+        //     const result = await plantsCollection.find().toArray();
+        //     console.log(result)
+        //     res.send(result);
+        // })
 
         app.get('/my-plants/:email', async (req, res) => {
             const userEmail = req.params.email;
-            const result = await plantsCollection.find({userEmail}).toArray();
+            const result = await plantsCollection.find({ userEmail }).toArray();
             console.log(result)
             res.send(result);
         })
@@ -84,6 +84,63 @@ async function run() {
             console.log(result)
             res.send(result);
         })
+
+        app.put('/update/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const updatedPlant = req.body;
+            const updateDocument = {
+                $set: updatedPlant
+            };
+            const options = { upsert: true };
+            const result = await plantsCollection.updateOne(filter, updateDocument, options);
+            res.send(result)
+        })
+
+        app.delete('/plant/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await plantsCollection.deleteOne(query);
+            res.send(result)
+        })
+
+        app.get('/plants', async (req, res) => {
+            const { sortBy } = req.query;
+
+            let result;
+
+            if (sortBy === 'health') {
+                result = await plantsCollection
+                    .aggregate([
+                        {
+                            $sort: {
+                                // nextWateredDate: 1,
+                                healthStatus: -1
+                            }
+                        }
+                    ])
+                    .toArray();
+            }
+            else if (sortBy === 'date') {
+                result = await plantsCollection
+                    .aggregate([
+                        {
+                            $sort: {
+                                nextWateredDate: 1,
+                                // healthStatus: -1
+                            }
+                        }
+                    ])
+                    .toArray();
+            }
+            else {
+                result = await plantsCollection
+                    .find()
+                    .toArray();
+            }
+
+            res.send(result);
+        });
 
     } finally {
         // Ensures that the client will close when you finish/error
