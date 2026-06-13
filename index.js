@@ -8,7 +8,7 @@ app.use(cors());
 const db_user = "yatique26_db_user"
 const db_password = "nINZ4etq5IPzhuHe"
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${db_user}:${db_password}@cluster0.uggs0gi.mongodb.net/?appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -48,11 +48,41 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/my-plants/:email', async (req, res) => {
+            const userEmail = req.params.email;
+            const result = await plantsCollection.find({userEmail}).toArray();
+            console.log(result)
+            res.send(result);
+        })
+
         app.post('/addplant', async (req, res) => {
             const newPlant = req.body
             console.log(newPlant)
             const result = await plantsCollection.insertOne(newPlant)
             res.send(result)
+        })
+
+        app.post('/adduser', async (req, res) => {
+            const newUser = req.body
+            console.log(newUser)
+            const result = await usersCollection.insertOne(newUser)
+            res.send(result)
+        })
+
+        app.get('/plant/:id', async (req, res) => {
+            const id = req.params.id;
+            const projection = { _id: new ObjectId(id) }
+            const result = await plantsCollection.findOne(projection)
+            console.log(result)
+            res.send(result);
+        })
+
+        app.get('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const projection = { email: email }
+            const result = await usersCollection.findOne(projection)
+            console.log(result)
+            res.send(result);
         })
 
     } finally {
