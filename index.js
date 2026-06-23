@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = 3001;
 app.use(express.json())
 app.use(cors());
 require('dotenv').config()
@@ -29,6 +29,13 @@ const plant = {
 
 async function run() {
     try {
+        console.log("Before route 1");
+
+        app.get('/testin', (req, res) => {
+            res.send('Plant server test in');
+        });
+
+        console.log("Before Mongo");
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
@@ -36,6 +43,13 @@ async function run() {
         const usersCollection = client.db('plantDB').collection('users');
 
 
+        console.log("Mongo connected");
+
+        app.get('/testin2', (req, res) => {
+            res.send('Plant server test in under db');
+        });
+
+        console.log("Route 2 registered");
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
@@ -147,7 +161,9 @@ async function run() {
         // await client.close();
     }
 }
-run().catch(console.dir);
+run().catch(err => {
+    console.error("RUN ERROR:", err);
+});
 
 
 
@@ -155,6 +171,12 @@ app.get('/', (req, res) => {
     res.send('Plant server 2');
 });
 
-app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+app.get('/testout', (req, res) => {
+    res.send('Plant server test out');
 });
+
+// app.listen(port, () => {
+//     console.log(`Example app listening on port ${port}`);
+// });
+
+module.exports = app;
